@@ -1,0 +1,32 @@
+def calc_cube(numbers):
+	for n in numbers:
+		print "cube will be==",n*n*n
+
+from pyinstrument import Profiler 
+profiler = Profiler() 
+profiler.start() # code you want to profile profiler.stop() print(profiler.output_text(unicode=True, color=True))
+
+
+
+
+* User
+   - user_id    auto integer
+   - regtime    datetime
+   - username   varchar
+   - useremail  varchar
+   - userpass   varchar
+ * Question
+   - question_id   auto integer
+   - question      varchar
+   - is_active     enum(0,1)
+ * Question_choices
+   - choice_id        auto integer
+   - question_id      integer
+   - is_right_choice  enum(0,1)
+   - choice           varchar
+ * User_question_answer
+   - user_id      integer
+   - question_id  integer
+   - choice_id    integer
+   - is_right     enum(0,1)
+   - answer_time  datetime

@@ -25,9 +25,10 @@ class PasswordResetForm(FlaskForm):
 
 class AddQuestionForm(FlaskForm):
 
-	name = StringField("Question",validators=[InputRequired("Question can not be blank."), Length(min=4, max=1500)])
-	option1 = StringField("Option 1",validators=[InputRequired("Please enter option1."),Length(min=4, max=200)])
-	option2 = StringField("Option 2",validators=[InputRequired("Please enter option2."),Length(min=4, max=200)])
-	option3 = StringField("Option 3",validators=[InputRequired("Please enter option3."),Length(min=4, max=200)])
-	option4 = StringField("Option 4",validators=[InputRequired("Please enter option4."),Length(min=4, max=200)])
+	name = StringField("Question",validators=[InputRequired("Question can not be blank."), Length(min=1, max=1500)])
+	option1 = StringField("Option 1",validators=[InputRequired("Please enter option1."),Length(min=1, max=200)])
+	option2 = StringField("Option 2",validators=[InputRequired("Please enter option2."),Length(min=1, max=200)])
+	option3 = StringField("Option 3",validators=[InputRequired("Please enter option3."),Length(min=1, max=200)])
+	option4 = StringField("Option 4",validators=[InputRequired("Please enter option4."),Length(min=1, max=200)])
 	is_active = BooleanField("Is Active", default=True)
+	save_data = SubmitField("Save Question")

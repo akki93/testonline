@@ -26,13 +26,53 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-6 col-md-offset-2">
+       {% with messages= get_flashed_messages() %}
+       
+        {% for message in messages %}
+            <h3>{{message}}</h3>
+        {% endfor %}
+        
+       {% endwith %}
+     
       <h3><u>All Questions:</u></h3>
       <br/>
-      <table>
-        <th>Id</th>
-        <th>Question</th>
-        
-      </table>
+          {% for each in questions %}
+            <div class="row">
+             <div class="col-xs-1">
+              <b>ID:</b>{{each.id}}
+             </div>
+             <div class="col-xs-9">
+               <b>Q:</b> {{each.question}}
+             </div>
+             <div class="col-xs-2">
+              <b>Active:</b>{{each.is_active}}
+             </div>
+             <a href="{{ url_for('edit_question',ques_id=each.id) }}" class="btn btn-success">Edit</a>
+             <a href="{{ url_for('delete_question',ques_id=each.id) }}" class="btn btn-success">Remove</a>
+
+            </div>
+            <table class="table">
+              <thead>
+                <th>Options</th>
+                <th>Is Right Choice</th>
+                <th>Create Date</th>
+              </thead>
+              {% for each_child in each.questions_choices %}
+              <tr>
+                <td>
+                  {{each_child.choice}}
+                </td>
+                <td>
+                  {{each_child.is_right_choice}}
+                </td>
+                <td>
+                  {{each_child.created_date}}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          {% endfor %}
+    
       
       
     </div>    

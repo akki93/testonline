@@ -40,24 +40,24 @@ db = SQLAlchemy(app)
 #       self.is_admin = is_admin
 
 class Questions(db.Model):
-  __tablename__ = 'questions'
+  # __tablename__ = 'questions'
   # __searchable__=['title','content']
   
   id = db.Column('id', db.Integer, db.Sequence('question_id_seq',start=1),primary_key=True)
   question = db.Column(db.Text())
   is_active = db.Column(db.Boolean, unique=False, default=False)
   created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-  questions_choices = db.relationship('Choice', backref='questions', lazy=True)
+  questions_choices = db.relationship('QuestionsChoices', backref='main_question', cascade="all,delete",lazy=True)
 
 class QuestionsChoices(db.Model):
-  __tablename__ = 'questions_choices'
+  # __tablename__ = 'questions_choices'
   # __searchable__=['title','content']
   
   id = db.Column('id', db.Integer, db.Sequence('choice_id_seq',start=1),primary_key=True)
-  choice = db.Column('Choice',db.Text())
-  question_id = db.Column('Question ID',db.Integer,db.ForeignKey('questions.id'), nullable=False)
-  is_right_choice = db.Column('Is Right Choice',db.Boolean)
-  created_date = db.Column('Create Date',db.DateTime, default=datetime.datetime.utcnow)
+  choice = db.Column(db.Text())
+  question_id = db.Column(db.Integer,db.ForeignKey('questions.id'), nullable=False)
+  is_right_choice = db.Column(db.Boolean, default=False)
+  created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
  
 # @login_manager.user_loader
 # def load_user(user_id):
@@ -155,20 +155,71 @@ def start_test():
 @app.route('/add_question', methods=['GET', 'POST'])
 def add_question():
     form = AddQuestionForm()
-    # if form.validate_on_submit():
-    #     return "hello"
+    print "form.validate_on_submit()",request.method,form.validate(),form.validate_on_submit()
+    if request.method=='POST':
+        if form.validate()==False:
+          flash("All fields are required")
+          return render_template('add_questions.html', form=form)
+        else:
+          ques = Questions.query.filter_by(question=request.form['name']).first()
+          if not ques:
+            question = Questions(question=request.form['name'],is_active=request.form['is_active'])
+            db.session.add(question)
+            db.session.commit()
+
+            # print "ques=====",ques
+            opt1 = QuestionsChoices(choice= request.form['option1'], main_question=question)
+            opt2 = QuestionsChoices(choice= request.form['option2'], main_question=question)
+            opt3 = QuestionsChoices(choice= request.form['option3'], main_question=question)
+            opt4 = QuestionsChoices(choice= request.form['option4'], main_question=question)
+            db.session.add(opt1)
+            db.session.add(opt2)
+            db.session.add(opt3)
+            db.session.add(opt4)
+            db.session.commit()
+            flash("Questions added sucessfully!")
+          return render_template('questions_added.html', form=form,questions =Questions.query.all())
+
+
 
     return render_template('questions_added.html')
+
+@app.route('/all_question')
+def view_all_question():
+    return render_template('questions_added.html',questions =Questions.query.all())
 
 @app.route('/manage_questions')
 def manage_questions():
     form = AddQuestionForm()
-    # if form.validate_on_submit():
-    #     return "hello"
+    
   
     return render_template('add_questions.html', form=form)
 
+@app.route('/edit_question/<int:ques_id>',methods=['GET', 'POST'])
+def edit_question(ques_id=False):
+  search_result = Questions.query.filter_by(id=int(ques_id)).first()
+  # if search_result:
+  #     message = ""
+  #     message+=str(search_result.id)
+  #     db.session.delete(search_result)
+  #     db.session.commit()
+  #     flash(message+" "+"Deleted Sucessfully.")
+  #     return redirect(url_for('all_question'))
+  return "edit question"
+
+@app.route('/delete_question/<int:ques_id>',methods=['GET', 'POST'])
+def delete_question(ques_id=False):
+  search_result = Questions.query.filter_by(id=int(ques_id)).first()
+  if search_result:
+      message = ""
+      message+=str(search_result.question)
+      db.session.delete(search_result)
+      db.session.commit()
+      flash(message+" "+"Deleted Sucessfully.")
+      return redirect(url_for('view_all_question'))
+  return "Delete User"
+
 
 if __name__ == '__main__':
-  # db.create_all()
+  db.create_all()
   app.run(host='0.0.0.0',port=5001,debug=True)
