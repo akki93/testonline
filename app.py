@@ -150,7 +150,7 @@ def index():
 @app.route('/start_test')
 def start_test():
 
-    return render_template('quiz.html')
+    return render_template('quiz.html', questions = Questions.query.all())
 
 @app.route('/add_question', methods=['GET', 'POST'])
 def add_question():

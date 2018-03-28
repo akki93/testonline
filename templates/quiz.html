@@ -51,10 +51,15 @@
     </div> 
   </div>
   <div class="row">
-    <div class="col-sm-8 col-md-offset-1" align="center">
+    <div class="col-sm-12 col-md-offset-1" align="left">
       
       <p>here will be all questions</p>
-      
+      {% for each in questions %}
+        <h3>{{each.question}}</h3>
+          {% for option in each.questions_choices %}
+            <p>{{option.choice}}</p>
+          {% endfor %}
+      {% endfor %}
       
     </div>    
   </div>
