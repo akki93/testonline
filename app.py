@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, flash,redirect, url_for, session
-from forms import LoginForm, RegisterForm,PasswordResetForm, AddQuestionForm
+from forms import LoginForm, RegisterForm,PasswordResetForm, AddQuestionForm,QuizForm
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 
@@ -146,11 +146,22 @@ class QuestionsChoices(db.Model):
 def index():
     return render_template('index.html')
 
+@app.route('/submit_test',methods=['GET', 'POST'])
+def submit_test():
+    print "request====request.form",request,request.form
+    return "hey"
 
-@app.route('/start_test')
+@app.route('/start_test',methods=['GET', 'POST'])
 def start_test():
+    form = QuizForm()
+    print "request=====",request,request.form
+    # for each in Questions.query.all():
+    #     form.question = (each.id,each.question)
+    #     form.answers.choices = [(probot.id, probot.choice) for probot in each.questions_choices]
+    #     return render_template('quiz.html', form=form,questions = Questions.query.all())
+    # print "form>>>>>>>>>>data",form
 
-    return render_template('quiz.html', questions = Questions.query.all())
+    return render_template('quiz.html', form=form,questions = Questions.query.all())
 
 @app.route('/add_question', methods=['GET', 'POST'])
 def add_question():

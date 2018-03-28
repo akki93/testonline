@@ -33,13 +33,20 @@
     //   alert("Hello");
       
     //  }, 3000);
+
+   function preventBack(){window.history.forward();}
+
+    setTimeout("preventBack()", 0);
+
+    window.onunload=function(){null};
+
     </script>
 
 </head>
 <body onload="startTime()"> 
 
 <div class="text-center">
-  <h1>Test Online: Questions (MCQ)</h1>
+  <h1>Test Online: Questions (MCQ)<a href="/" class="btn btn-primary">Back</a></h1>
 </div>
  <br/>
  <br/>
@@ -50,9 +57,27 @@
       </h2>
     </div> 
   </div>
+  <form action="/submit_test" method="POST" class="form-horizontal" enctype="multipart/form-data">
+    {% set count = 1 %}
+    {% for each in questions |sort(attribute='id')%}
+      <div class="form-group">
+         <input type="text" name="question_{{each.id}}" id="{{each.id}}" style="border: 0;font-size: 1.5em;"class="form-control" value="Q{{count}}: {{each.question}}" readonly><br/>
+      </div>
+      <div class="form-group">
+      {% for option in each.questions_choices |sort(attribute='id')%}
+        <input type="radio" name="choice_{{each.id}}" id="{{option.id}}" value="{{option.choice}}">&nbsp;&nbsp;&nbsp;{{option.choice}}</input><br/>
+      {% endfor %}
+    </div>
+     {% set count = count + 1 %}
+    {% endfor %}
+    <br/>
+    <center>
+        <button type="submit" class="btn btn-primary">Submit Test</button>
+    </center>
+  </form>
+
   <div class="row">
-    <div class="col-sm-12 col-md-offset-1" align="left">
-      
+    <!-- <div class="col-sm-12 col-md-offset-1" align="left">
       <p>here will be all questions</p>
       {% for each in questions %}
         <h3>{{each.question}}</h3>
@@ -61,7 +86,7 @@
           {% endfor %}
       {% endfor %}
       
-    </div>    
+    </div>     -->
   </div>
  
 </div>

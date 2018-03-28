@@ -32,3 +32,8 @@ class AddQuestionForm(FlaskForm):
 	option4 = StringField("Option 4",validators=[InputRequired("Please enter option4."),Length(min=1, max=200)])
 	is_active = BooleanField("Is Active", default=True)
 	save_data = SubmitField("Save Question")
+
+class QuizForm(FlaskForm):
+
+	question = StringField("Question")
+	answers = RadioField('Label', choices=[])
