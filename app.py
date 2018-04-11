@@ -23,15 +23,16 @@ db = SQLAlchemy(app)
 # login_manager.login_view = 'open_login'
 
 # class User(UserMixin,db.Model):
+class User(UserMixin,db.Model):
 
-#   __tablename__ = 'users'
+  __tablename__ = 'users'
   
-#   id = db.Column('id', db.Integer, db.Sequence('user_id_seq',start=1), primary_key=True,)
-#   username = db.Column(db.String(80), unique=True)
-#   password = db.Column(db.String(80))
-#   email = db.Column(db.String(80), unique=True)
-#   created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-#   is_admin = db.Column(db.Boolean, unique=False, default=False)
+  id = db.Column('id', db.Integer, db.Sequence('user_id_seq',start=1), primary_key=True,)
+  username = db.Column(db.String(80), unique=True)
+  password = db.Column(db.String(80))
+  email = db.Column(db.String(80), unique=True)
+  created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+  is_admin = db.Column(db.Boolean, unique=False, default=False)
 
 #   def __init__(self, username, password, email, is_admin):
 #       self.username = username
@@ -48,16 +49,26 @@ class Questions(db.Model):
   is_active = db.Column(db.Boolean, unique=False, default=False)
   created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
   questions_choices = db.relationship('QuestionsChoices', backref='main_question', cascade="all,delete",lazy=True)
+  right_choice = db.Column(db.String)
 
 class QuestionsChoices(db.Model):
-  # __tablename__ = 'questions_choices'
+  __tablename__ = 'questions_choices'
   # __searchable__=['title','content']
   
   id = db.Column('id', db.Integer, db.Sequence('choice_id_seq',start=1),primary_key=True)
   choice = db.Column(db.Text())
   question_id = db.Column(db.Integer,db.ForeignKey('questions.id'), nullable=False)
-  is_right_choice = db.Column(db.Boolean, default=False)
   created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+class UserQuestionAnswer(db.Model):
+  # __tablename__ = 'questions_choices'
+  # __searchable__=['title','content']
+  
+  id = db.Column('id', db.Integer, db.Sequence('user_question_ans_id_seq',start=1),primary_key=True)
+  question_id = db.Column(db.Integer,db.ForeignKey('questions.id'), nullable=False)
+  choice_id = db.Column(db.Integer,db.ForeignKey('questions_choices.id'), nullable=False)
+  created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+  user_id = db.Column(db.Integer,db.ForeignKey('users.id'), nullable=False)
  
 # @login_manager.user_loader
 # def load_user(user_id):
@@ -148,8 +159,33 @@ def index():
 
 @app.route('/submit_test',methods=['GET', 'POST'])
 def submit_test():
-    print "request====request.form",request,request.form
-    return "hey"
+    if request.method=='POST':
+      all_questions_with_ans = []
+      ques = []
+      choc = []
+      form_data = request.form.to_dict()
+      for each in form_data:
+          if each.startswith('question'):
+            each_val = each.split('_')
+            ques.append(int(each_val[1]))
+          elif each.startswith('choice'):
+            each_val = each.split('_')
+            choc.append((int(each_val[1]),form_data.get(each))) 
+
+      for map_ques in ques:
+          for map_ch in choc:
+              if map_ques==map_ch[0]:
+                all_questions_with_ans.append((map_ques,map_ch[1]))
+      if all_questions_with_ans:
+        for aqw in all_questions_with_ans:
+            ques = Questions.query.filter_by(id=aqw[0]).first()
+            if ques:
+              choice_id = QuestionsChoices.query.filter_by(question_id=ques.id,choice=aqw[1]).first()
+              datatoadd = UserQuestionAnswer(question_id=ques.id,choice_id=choice_id.id,user_id=1)
+              db.session.add(datatoadd)
+              db.session.commit()
+
+    return render_template('thanks.html',data=UserQuestionAnswer.query.all())
 
 @app.route('/start_test',methods=['GET', 'POST'])
 def start_test():
@@ -174,7 +210,7 @@ def add_question():
         else:
           ques = Questions.query.filter_by(question=request.form['name']).first()
           if not ques:
-            question = Questions(question=request.form['name'],is_active=request.form['is_active'])
+            question = Questions(question=request.form['name'],is_active=request.form['is_active'],right_choice=request.form['right_choice'])
             db.session.add(question)
             db.session.commit()
 

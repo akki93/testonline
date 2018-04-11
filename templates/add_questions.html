@@ -97,6 +97,13 @@
         {% endfor %}
         <br/>
         <div class="form-group">
+           {{ form.right_choice.label(class="control-label col-sm-2") }}
+           <div class="col-sm-10">
+           {{form.right_choice}}
+          </div>
+        </div>
+        <br/>
+        <div class="form-group">
            {{ form.is_active.label(class="control-label col-sm-2") }}
            <div class="col-sm-10">
            {{form.is_active}}

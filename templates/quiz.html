@@ -14,31 +14,31 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
   <script>
-    function startTime() {
-        var today = new Date();
-        var h = today.getHours();
-        var m = today.getMinutes();
-        var s = today.getSeconds();
-        m = checkTime(m);
-        s = checkTime(s);
-        document.getElementById('txt').innerHTML =
-        h + ":" + m + ":" + s;
-        var t = setTimeout(startTime, 500);
-    }
-    function checkTime(i) {
-        if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-        return i;
-    }
-    // setTimeout(function(){ 
-    //   alert("Hello");
+   //  function startTime() {
+   //      var today = new Date();
+   //      var h = today.getHours();
+   //      var m = today.getMinutes();
+   //      var s = today.getSeconds();
+   //      m = checkTime(m);
+   //      s = checkTime(s);
+   //      document.getElementById('txt').innerHTML =
+   //      h + ":" + m + ":" + s;
+   //      var t = setTimeout(startTime, 500);
+   //  }
+   //  function checkTime(i) {
+   //      if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+   //      return i;
+   //  }
+   //  // setTimeout(function(){ 
+   //  //   alert("Hello");
       
-    //  }, 3000);
+   //  //  }, 3000);
 
-   function preventBack(){window.history.forward();}
+   // function preventBack(){window.history.forward();}
 
-    setTimeout("preventBack()", 0);
+   //  setTimeout("preventBack()", 0);
 
-    window.onunload=function(){null};
+   //  window.onunload=function(){null};
 
     </script>
 
