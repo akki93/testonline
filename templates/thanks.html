@@ -19,17 +19,30 @@
   <h1>Test Have been submitted sucessfully!</h1>
 </div>
 <br/>
-<div>
-  {% for each in data %}
-     {{each.id}}
-     {{each.question_id}}
-     {{each.choice_id}}
-     {{each.user_id}}
-  {% endfor %}
-</div>
+
 <div class="text-right">
         <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
         <a href="/all_question" class="btn btn-primary">All Questions</a>
+</div>
+<div class="container"> 
+  <table class="table">
+    <thead>
+      <th>ID</th>
+      <th>Question</th>
+      <th>Choice</th>
+      <th>User</th>
+    </thead>
+    <tbody>
+      {% for each in data %}
+      <tr>
+      <td>{{each.id}}</td>
+      <td>{{each.question_id}}</td>
+      <td>{{each.choice_id}}</td>
+      <td>{{each.user_id}}</td>
+    </tr>
+     {% endfor %}
+    </tbody>
+  </table>
 </div>
  
 

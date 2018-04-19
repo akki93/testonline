@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+<title>Test Online! Login</title>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		
+		<div >
+			
+
+ 		<div >
+
+				<h2><b>Test Online! Login</b></h2>
+			</div>
+			{% with messages= get_flashed_messages() %}
+				{% if messages %}
+					{% for message in messages %}
+						<h3>{{message}}</h3>
+					{% endfor %}
+				{% endif %}
+			{% endwith %}
+			 {% for message in form.username.errors %}
+		    <div>UserName :{{ message }}</div>
+		    {% endfor %}
+		    {% for message in form.password.errors %}
+		    <div>Password: {{ message }}</div>
+		    {% endfor %}
+			 <form action="/login" method="POST" autocomplete="off">
+      			<fieldset>
+      				 {{ form.hidden_tag() }}
+      				 {{ form.username.label }}
+      				 <br/>
+        			 {{ form.username }}
+					<br/>
+					 {{ form.password.label }}
+      				 <br/>
+        			 {{ form.password }}
+					<br/>
+					{{ form.remember.label }}
+      				 <br/>
+        			 {{ form.remember }}
+
+				</fieldset>
+				<button type="submit">Login</button>
+				<br/>
+				<br/>
+				<a href="/signup" style="display:inline"><p class="btn btn-danger">Sign up</p></a> <br/>
+				<br/>
+				<a href="/sign_in" ></a><br/><br/>
+				<a href="/password_reset"><p class="small">Forgot your password?</p></a>
+			</form>
+
+		</div>
+
+	</div>
+</body>
+
+
+
+</html>
