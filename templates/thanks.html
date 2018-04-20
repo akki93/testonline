@@ -12,6 +12,35 @@
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!--For creating Pie Chart-->
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+    <script type="text/javascript">
+    window.onload = function () {
+	var chart = new CanvasJS.Chart("chartContainer",
+	{
+		title:{
+			text: "Your Report"
+		},
+		legend: {
+			maxWidth: 350,
+			itemWidth: 120
+		},
+		data: [
+		{
+			type: "pie",
+			showInLegend: true,
+			legendText: "{indexLabel}",
+			dataPoints: [
+				{ y: {{ correct_ans }}, indexLabel: "Correct Answers" },
+				{ y: {{ incorrect_answers }}, indexLabel: "Incorrect Answers" }
+			]
+		}
+		]
+	});
+	chart.render();
+}
+</script>
 </head>
 <body >
 
@@ -24,25 +53,25 @@
         <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
         <a href="/all_question" class="btn btn-primary">All Questions</a>
 </div>
-<div class="container"> 
-  <table class="table">
-    <thead>
-      <th>ID</th>
-      <th>Question</th>
-      <th>Choice</th>
-      <th>User</th>
-    </thead>
-    <tbody>
-      {% for each in data %}
-      <tr>
-      <td>{{each.id}}</td>
-      <td>{{each.question_id}}</td>
-      <td>{{each.choice_id}}</td>
-      <td>{{each.user_id}}</td>
-    </tr>
-     {% endfor %}
-    </tbody>
-  </table>
+<div class="container">
+  <h3>Thank you {{ name.username }} for submitting the exam. Your report are as follows</h3>
+    <table class="table" style="border:2px solid black;">
+        <thead>
+        <th>Total Questions</th>
+        <th>Correct Answers</th>
+        <th>Incorrect Answers</th>
+        <th>Percentage</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ question_count }}</td>
+                <td>{{ correct_ans }}</td>
+                <td>{{ incorrect_answers }}</td>
+                <td>{{ user_percentage }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="chartContainer" style="height: 300px; width: 100%;"></div>
 </div>
  
 
