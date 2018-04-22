@@ -38,7 +38,7 @@
         
     {% endwith %}
      
-    <form action="/add_question" method=post class="form-horizontal">
+    <form action="{{request.path}}" method=post class="form-horizontal">
 
       <fieldset>
          {{ form.hidden_tag() }}
@@ -100,7 +100,6 @@
            {{ form.right_choice.label(class="control-label col-sm-2") }}
            <div class="col-sm-10">
             {% if search_result.right_choice  %}
-            {{search_result.right_choice}}
               {{form.right_choice(value=search_result.right_choice)}}
             {% endif %}
           </div>

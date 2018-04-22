@@ -22,6 +22,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'open_login'
 
+from sqlalchemy import create_engine
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -58,9 +59,9 @@ class QuestionsChoices(db.Model):
 
     id = db.Column('id', db.Integer, db.Sequence('choice_id_seq', start=1), primary_key=True)
     choice = db.Column(db.Text())
-    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id',ondelete='CASCADE'), nullable=False)
     created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    is_right = db.Column(db.Boolean, unique=False, default=False)
+    is_right = db.Column(db.Boolean,  default=False)
 
 
 
@@ -280,9 +281,18 @@ def manage_questions():
 
     return render_template('add_questions.html', form=form)
 
-
+@app.route('/edited_question', methods=['GET', 'POST'])
 @app.route('/edit_question/<int:ques_id>', methods=['GET', 'POST'])
 def edit_question(ques_id=False):
+    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+
+    # print engine
+    cnx = engine.connect()
+    # x = cnx.execute("select name,count(id) from contact group by name")
+    # cnx.close()
+    # calling update request=== POST 3 {'csrf_token': u'ImY3NDY3MDJkMzQyNWEwM2I0MmNiOTJlYzE5MGRmNGUxMGU3ODc5NDEi.Db3UTA.GOe-w_VNPaEPSX72uXP2rR6bZyQ', 
+    # 'name': u'what is your favourate color', 'save_data': u'Save Question', 'option4': u'pink', 
+    # 'option2': u'greeen', 'option3': u'blue', 'option1': u'red'}
     form = AddQuestionForm()
     search_result = Questions.query.filter_by(id=int(ques_id)).first()
     all_option = {}
@@ -297,16 +307,63 @@ def edit_question(ques_id=False):
         elif 'option4' not in all_option:
             all_option.update({'option4': each.choice})
     print ("all_optionnnnn=====", all_option)
+    if request.method=='POST':
+        print "calling update request===",request.method,ques_id,request.form.to_dict()
+        form_data = request.form.to_dict()
+        search_result.question = form_data.get('name')
+        search_result.right_choice = form_data.get('right_choice')
+        user_ans = UserQuestionAnswer.query.filter_by(user_id=current_user.id,question_id=int(ques_id)).all()
+        print "user_ans=====",user_ans
+        for each in user_ans:
+            cnx.execute("delete from user_question_answer where id =%s",(each.id))
+        choices = QuestionsChoices.query.filter_by(question_id=int(ques_id)).all()
+        print "choices=======",choices
+        for each in choices:
+            db.session.delete(each)
+        db.session.commit()
+        #for updating the options
+        option1 = False
+        option2 = False
+        option3 = False
+        option4 = False
+        if str(form_data.get('right_choice')) == 'option1':
+            option1 = True
+        elif str(form_data.get('right_choice')) == 'option2':
+            option2 = True
+        elif str(form_data.get('right_choice')) == 'option3':
+            option3 = True
+        elif str(form_data.get('right_choice')) == 'option4':
+            option4 = True
+        opt1 = QuestionsChoices(choice=str(form_data.get('option1')), is_right=option1,main_question=search_result)
+        opt2 = QuestionsChoices(choice=str(form_data.get('option2')), is_right=option2, main_question=search_result)
+        opt3 = QuestionsChoices(choice=str(form_data.get('option3')), is_right=option3, main_question=search_result)
+        opt4 = QuestionsChoices(choice=str(form_data.get('option4')), is_right=option4, main_question=search_result)
+        db.session.add(opt1)
+        db.session.add(opt2)
+        db.session.add(opt3)
+        db.session.add(opt4)
+
+        db.session.commit()
+        return redirect(url_for('view_all_question'))
+        
     return render_template("edit_question.html", form=form, search_result=search_result, all_options=all_option)
 
 
 @app.route('/delete_question/<int:ques_id>', methods=['GET', 'POST'])
 def delete_question(ques_id=False):
     print ("ques_id========", ques_id)
+    #first need to remove child table data
+    # user_ans=False
+    # choices = False
+    # user_ans = UserQuestionAnswer.query.filter_by(user_id=current_user.id,question_id=int(ques_id)).all()
+    # if user_ans:
+    #     choices = QuestionsChoices.query.filter_by(question_id=int(ques_id)).all()
     search_result = Questions.query.filter_by(id=int(ques_id)).first()
     if search_result:
         message = ""
         message += str(search_result.question)
+        # db.session.delete(user_ans) if user_ans else True
+        # db.session.delete(choices)  if choices  else True
         db.session.delete(search_result)
         db.session.commit()
         flash(message + " " + "Deleted Sucessfully.")
