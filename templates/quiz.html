@@ -15,14 +15,20 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <script>
-  
-    //for disable the back button
+    
+
+    function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) e.preventDefault(); };
+
+//for disable the back button
     $(document).ready(function() {
       window.history.forward(-1);
         // window.history.pushState(null, "", window.location.href);        
         // window.onpopstate = function() {
         //     window.history.pushState(null, "", window.location.href);
         // };
+
+             $(document).on("keydown", disableF5);
+
     });
     //define your time in second
         var c=2400;
