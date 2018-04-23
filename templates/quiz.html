@@ -15,8 +15,23 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <script>
+    
+
+    function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) e.preventDefault(); };
+
+//for disable the back button
+    $(document).ready(function() {
+      window.history.forward(-1);
+        // window.history.pushState(null, "", window.location.href);        
+        // window.onpopstate = function() {
+        //     window.history.pushState(null, "", window.location.href);
+        // };
+
+             $(document).on("keydown", disableF5);
+
+    });
     //define your time in second
-        var c=20;
+        var c=2400;
         var t;
         timedCount();
 
@@ -71,16 +86,31 @@
 
    //  window.onunload=function(){null};
 
+
+
     </script>
 
 </head>
 <body onload="startTime()"> 
 
 <div class="text-center">
-  <h1>Test Online: Questions (MCQ)<a href="/" class="btn btn-primary">Back</a></h1>
+  
+  <h1>Test Online: Questions (MCQ)
+   <!--  {% if current_user.is_admin %}
+    <a href="/" class="btn btn-primary">Back</a>
+
+      {% endif %} -->
+  </h1>
+
+<div class="text-right">
+  {% if current_user.is_admin %}
+        <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
+        <a href="/all_question" class="btn btn-primary">All Questions</a>
+  {% endif %}
+</div>
   <ul class="nav navbar-nav navbar-right">
         <li><a href="#"> {{name.upper()}}</a></li>
-        <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
+        <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>&nbsp;&nbsp;
 
       </ul>
 </div>
@@ -111,7 +141,7 @@
       </div>
       <div class="form-group">
       {% for option in each.questions_choices |sort(attribute='id')%}
-        <input type="radio" name="choice_{{each.id}}" id="{{option.id}}" value="{{option.choice}}">&nbsp;&nbsp;&nbsp;{{option.choice}}</input><br/>
+        <input type="radio" name="choice_{{each.id}}" id="{{option.id}}" value="{{option.choice}}" required="required">&nbsp;&nbsp;&nbsp;{{option.choice}}</input><br/>
       {% endfor %}
     </div>
      {% set count = count + 1 %}

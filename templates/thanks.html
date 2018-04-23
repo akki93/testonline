@@ -16,6 +16,9 @@
     <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 
     <script type="text/javascript">
+
+    
+
     window.onload = function () {
 	var chart = new CanvasJS.Chart("chartContainer",
 	{
@@ -40,6 +43,21 @@
 	});
 	chart.render();
 }
+
+function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) e.preventDefault(); };
+
+//for disable the back button
+    $(document).ready(function() {
+      window.history.forward(-1);
+        // window.history.pushState(null, "", window.location.href);        
+        // window.onpopstate = function() {
+        //     window.history.pushState(null, "", window.location.href);
+        // };
+
+             $(document).on("keydown", disableF5);
+
+    });
+
 </script>
 </head>
 <body >
@@ -50,8 +68,10 @@
 <br/>
 
 <div class="text-right">
+    {% if current_user.is_admin %}
         <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
         <a href="/all_question" class="btn btn-primary">All Questions</a>
+    {% endif %}
 </div>
 <div class="container">
   <h3>Thank you {{ name.username }} for submitting the exam. Your report are as follows</h3>
