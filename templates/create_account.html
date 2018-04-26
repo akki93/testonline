@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+{% extends '/layout.html' %}
+{% block head %}
 <style>
 /*form {
     border: 3.5px solid #f1f1f1;
@@ -28,7 +22,7 @@ button {
     margin: 8px 0;
     border: none;
     cursor: pointer;
-    width: 100%;
+    width: 50%;
 }
 
 button:hover {
@@ -70,17 +64,23 @@ span.psw {
        width: 100%;
     }
 }
+.lbl-create-ac-username, .lbl-create-ac-email, .lbl-create-ac-password, a.forgot-link{
+    color: #fff;
+}
 </style>
+{% endblock %}
 </head>
 
 <body>
+{% block body %}
 <div class="row col-md-4 col-md-offset-4" >
     <!-- <div > -->
     <br/>
     <br/>
     <div class="row">
         <center>
-        <h2>Test Online! Login</h2>
+            <img src="/static/img/acc-create.png" style="width:70px; height:70px;">
+            <h2>Create Account</h2>
 
         <a href="/sign_in"><span class="glyphicon glyphicon-log-in"></span> Back to Login</a>
     </center>
@@ -106,7 +106,7 @@ span.psw {
     {% endfor %}
 
     <form action="/create_account" method=post autocomplete="off">
-        <span class="psw" align="right">Forgot <a href="/password_reset">password?</a></span>
+        <span><a href="/password_reset" class="forgot-link">Forgot password?</a></span>
         <br/>
       <div class="imgcontainer">
         <img src="/static/img/opengraph.png" alt="Avatar" class="avatar">
@@ -114,15 +114,15 @@ span.psw {
 
       <fieldset>
              {{ form.hidden_tag() }}
-            {{ form.username.label }}
+            {{ form.username.label(class="lbl-create-ac-username") }}
             <br/>
             {{ form.username(class="form-control")}}
             <br/>
-            {{ form.email.label }}
+            {{ form.email.label(class="lbl-create-ac-email") }}
             <br/>
             {{ form.email(class="form-control")}}
             <br/>
-            {{ form.password.label }}
+            {{ form.password.label(class="lbl-create-ac-password") }}
             <br/>
             {{ form.password(class="form-control")}}
             <br/>
@@ -143,10 +143,10 @@ span.psw {
     <label class="col-2 col-form-label"><b>Confirm Password</b></label>
     <input type="password" placeholder="Confirm Password" class="form-control" name="con_psw" required>
     </div> -->
-    <button type="submit" class="form-control btn-success" >Signup</button>
+    <button type="submit" class="btn btn-success" >Signup</button>
     
     
-    <hr/>
+    <!--<hr/>-->
       <!-- <div class="row" >
         <a href="/create_account">New to Smart Blog? Create an account.</a>
         
@@ -155,5 +155,6 @@ span.psw {
 </center>
 <!-- </div> -->
 </div>
+{% endblock %}
 </body>
 </html>

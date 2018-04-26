@@ -11,13 +11,17 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script>
 
-  <script>
-    
 
-    function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82) e.preventDefault(); };
+    function disableF5(e) { if ((e.which || e.keyCode) == 116 || (e.which || e.keyCode) == 82 || (e.which || e.keyCode) == 123 || (e.which || e.keyCode) == 154)
+    console.log('In disable F5 function');
+    e.preventDefault(); };
+    <!--$(document).on("keydown", disableF5);-->
+
 
 //for disable the back button
     $(document).ready(function() {
@@ -89,10 +93,15 @@
 
 
     </script>
-
+<style>
+div.col-xs-8 {
+    width: 27.666667%!important;
+}
+</style>
 </head>
-<body onload="startTime()"> 
+<body>
 
+<div class="sticky">
 <div class="text-center">
   
   <h1>Test Online: Questions (MCQ)
@@ -102,31 +111,23 @@
       {% endif %} -->
   </h1>
 
-<div class="text-right">
+<div class="col-xs-4 text-left">
   {% if current_user.is_admin %}
         <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
         <a href="/all_question" class="btn btn-primary">All Questions</a>
   {% endif %}
 </div>
+    <div class="col-xs-8" style="color:#FF0000; font-size: 24px;">
+        Time : <span id='timer'></span>
+    </div>
   <ul class="nav navbar-nav navbar-right">
-        <li><a href="#"> {{name.upper()}}</a></li>
-        <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>&nbsp;&nbsp;
+        <li><a href="#" style="padding-bottom:5px;"> {{name.upper()}}</a></li>
+        <li><a href="/logout" style="padding-bottom:5px;"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>&nbsp;&nbsp;
 
       </ul>
 </div>
-<h3 style="color:#FF0000" align="center">
- Time : <span id='timer'></span>
- </h3>
-<!-- div >
-  <ul class="nav navbar-nav navbar-right">
-        <li><a href="#"> {{name.upper()}}</a></li>
-        <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
-
-      </ul>
-</div> -->
- <br/>
- <br/>
-<div class="container">
+</div>
+<div class="container" style="height:480px;overflow-y:auto;">
   <div class="row">
     <div class="text-right" >
       <h2><div id="txt"></div>
@@ -136,16 +137,17 @@
   <form action="/submit_test" method="POST" id="auto_sub_quiz" class="form-horizontal" enctype="multipart/form-data">
     {% set count = 1 %}
     {% for each in questions |sort(attribute='id')%}
-      <div class="form-group">
-         <input type="text" name="question_{{each.id}}" id="{{each.id}}" style="border: 0;font-size: 1.5em;"class="form-control" value="Q{{count}}: {{each.question}}" readonly><br/>
-      </div>
-      <div class="form-group">
-      {% for option in each.questions_choices |sort(attribute='id')%}
-        <input type="radio" name="choice_{{each.id}}" id="{{option.id}}" value="{{option.choice}}" required="required">&nbsp;&nbsp;&nbsp;{{option.choice}}</input><br/>
-      {% endfor %}
-    </div>
+        <div class="form-group">
+            <div class="jumbotron">
+                <input type="text" name="question_{{each.id}}" id="{{each.id}}" style="border: 0;font-size: 1.5em;"class="form-control no-border" value="Q{{count}}: {{each.question}}" readonly><br/>
+                {% for option in each.questions_choices |sort(attribute='id')%}
+                    <input type="radio" name="choice_{{each.id}}" id="{{option.id}}" value="{{option.choice}}" required="required">&nbsp;&nbsp;&nbsp;{{option.choice}}</input><br/>
+                {% endfor %}
+            </div>
+        </div>
      {% set count = count + 1 %}
     {% endfor %}
+
     <br/>
     <center>
         <button type="submit" class="btn btn-primary">Submit Test</button>
@@ -168,6 +170,6 @@
 </div>
 
 
-<div 
+</div>
 </body>
 </html>
