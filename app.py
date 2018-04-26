@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
 from forms import LoginForm, RegisterForm, PasswordResetForm, AddQuestionForm, QuizForm
 from flask_sqlalchemy import SQLAlchemy
 import datetime
@@ -11,10 +11,17 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 
 import operator
 
+# for exporting data to a  report
+import xlsxwriter
+
+from cStringIO import StringIO
+
+import base64
+
 app = Flask(__name__, template_folder='../testonline/templates')
 
 app.config["SECRET_KEY"] = "Thisisascretkey"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
@@ -23,6 +30,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'open_login'
 
 from sqlalchemy import create_engine
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -274,6 +282,59 @@ def view_all_question():
     return render_template('questions_added.html', questions=Questions.query.all())
 
 
+@app.route('/all_users')
+@login_required
+def view_all_users():
+    if current_user.is_admin:
+        return render_template('all_users.html', users=User.query.all())
+    else:
+        flash("You are not an admin user. Hence you cannot view this page!!")
+        return redirect(url_for('index'))
+
+
+@app.route('/control-center')
+@login_required
+def control_center():
+    if current_user.is_admin:
+        return render_template('control-center.html')
+    else:
+        flash('Please log-in with Administrator account to view the control panel')
+        return redirect(url_for('index'))
+
+
+@app.route('/control-center/export-data')
+@login_required
+def export_data():
+    if current_user.is_admin:
+        engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+        cur = engine.connect()
+        all_questions = cur.execute("select question from questions")
+        quest_set = []
+        for each_quest in all_questions:
+            quest_set.append(each_quest)
+        file_data = StringIO()
+        workbook = xlsxwriter.Workbook(file_data)
+        worksheet = workbook.add_worksheet('Data')
+        # Add a bold format to use to highlight cells.
+        bold = workbook.add_format({'bold': True})
+        worksheet.write('A1', 'Question', bold)
+        # Start from the first cell. Rows and columns are zero indexed.
+        row = 1
+        col = 0
+        for every_question in quest_set:
+            worksheet.write(row, col, every_question[0])
+            row += 1
+        workbook.close()
+        file_data.seek(0)
+        return Response(
+            file_data.read(),
+            mimetype="application/excel",
+            headers={"Content-disposition": "attachment; filename=Question Report.xls"})
+    else:
+        flash('Please log-in with Administrator account to view the control panel')
+        return redirect(url_for('index'))
+
+
 @app.route('/manage_questions')
 @login_required
 def manage_questions():
@@ -316,6 +377,7 @@ def edit_question(ques_id=False):
         print "user_ans=====",user_ans
         for each in user_ans:
             cnx.execute("delete from user_question_answer where id =%s",(each.id))
+        cnx.close()
         choices = QuestionsChoices.query.filter_by(question_id=int(ques_id)).all()
         print "choices=======",choices
         for each in choices:
