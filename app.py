@@ -15,8 +15,10 @@ import operator
 import xlsxwriter
 
 from cStringIO import StringIO
-
-import base64
+from docx import Document
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from sqlalchemy import create_engine
 
 app = Flask(__name__, template_folder='../testonline/templates')
 
@@ -28,8 +30,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'open_login'
-
-from sqlalchemy import create_engine
 
 
 class User(UserMixin, db.Model):
@@ -72,7 +72,6 @@ class QuestionsChoices(db.Model):
     is_right = db.Column(db.Boolean,  default=False)
 
 
-
 class UserQuestionAnswer(db.Model):
     # __tablename__ = 'questions_choices'
     # __searchable__=['title','content']
@@ -82,6 +81,14 @@ class UserQuestionAnswer(db.Model):
     choice_id = db.Column(db.Integer, db.ForeignKey('questions_choices.id'), nullable=False)
     created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+
+class UserMarksReport(db.Model):
+    __tablename__ = 'user_marks_report'
+    exam_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    uid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, primary_key=True)
+    marks = db.Column(db.Integer)
+    percentage = db.Column(db.Float)
 
 
 @login_manager.user_loader
@@ -96,10 +103,16 @@ def open_login():
         # return '<h1>'+form.username.data +' ' +form.password.data+ '</h1>'
         user = User.query.filter_by(username=form.username.data).first()
         try:
-            if user:
+            if user.is_admin:
                 if check_password_hash(user.password, form.password.data):
                     login_user(user, remember=form.remember.data)
-                    return redirect(url_for('start_test'))
+                    return redirect(url_for('control_center'))
+                else:
+                    flash("Password does not match. Forgot Password ?")
+            elif user:
+                if check_password_hash(user.password, form.password.data):
+                    login_user(user, remember=form.remember.data)
+                    return redirect(url_for('index'))
                 else:
                     flash("Password does not match.Forgot password ?")
             else:
@@ -208,7 +221,11 @@ def submit_test():
             if each_quest and each_quest.choice_id == choice_id.id:
                 correct_ans += 1
         incorrect_answers = question_count - correct_ans
-        user_percentage = ((correct_ans * 100) / question_count)
+        user_percentage = ((correct_ans * 100) / float(question_count))
+        user_percentage = format(user_percentage, '.2f')
+        user_marks_report = UserMarksReport(uid=current_user.id, marks=correct_ans, percentage=float(user_percentage))
+        db.session.add(user_marks_report)
+        db.session.commit()
     return render_template('thanks.html', name=current_user, **locals())
 
 
@@ -302,16 +319,31 @@ def control_center():
         return redirect(url_for('index'))
 
 
-@app.route('/control-center/export-data')
+@app.route('/control-center/export')
+@login_required
+def export():
+    if current_user.is_admin:
+        return render_template('export-data.html')
+    else:
+        flash('Please log-in with Administrator account to view the control panel')
+        return redirect(url_for('index'))
+
+
+@app.route('/control-center/export-data', methods=['GET', 'POST'])
 @login_required
 def export_data():
-    if current_user.is_admin:
-        engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
-        cur = engine.connect()
-        all_questions = cur.execute("select question from questions")
-        quest_set = []
-        for each_quest in all_questions:
-            quest_set.append(each_quest)
+    engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
+    cur = engine.connect()
+    all_questions = cur.execute("select question from questions")
+    all_answers = cur.execute("select choice from questions_choices where is_right = true")
+    quest_set = []
+    ans_set = []
+    for each_quest in all_questions:
+        quest_set.append(each_quest[0])
+    for each_ans in all_answers:
+        ans_set.append(each_ans[0])
+    quest_ans_set = zip(quest_set, ans_set)
+    if current_user.is_admin and request.form['selected_report_type'] == 'XLS':
         file_data = StringIO()
         workbook = xlsxwriter.Workbook(file_data)
         worksheet = workbook.add_worksheet('Data')
@@ -321,8 +353,10 @@ def export_data():
         # Start from the first cell. Rows and columns are zero indexed.
         row = 1
         col = 0
-        for every_question in quest_set:
-            worksheet.write(row, col, every_question[0])
+        for each_q_ans in quest_ans_set:
+            worksheet.write(row, col, each_q_ans[0])
+            row += 1
+            worksheet.write(row, col, 'Ans: ' + each_q_ans[1])
             row += 1
         workbook.close()
         file_data.seek(0)
@@ -330,9 +364,66 @@ def export_data():
             file_data.read(),
             mimetype="application/excel",
             headers={"Content-disposition": "attachment; filename=Question Report.xls"})
+
+    elif current_user.is_admin and request.form['selected_report_type'] == 'DOC':
+        file_data = StringIO()
+        document = Document()
+        document.add_heading('Question Set', level=1)
+        document.add_paragraph([str(ques_ans[0]) + '\n' + 'Ans: ' + str(ques_ans[1]) +
+                                '\n' for ques_ans in quest_ans_set])
+        document.save(file_data)
+        file_data.seek(0)
+        return Response(
+            file_data.read(),
+            mimetype="application/doc",
+            headers={"Content-disposition": "attachment; filename=Question Report.doc"})
+
+    elif current_user.is_admin and request.form['selected_report_type'] == 'PDF':
+        file_data = StringIO()
+        p = canvas.Canvas(file_data, pagesize=A4)
+        p.setFont('Helvetica', 14)
+        p.drawString(250, 800, "Question Set")
+        x = 60
+        y = 760
+        n = 1
+        for each_quest_ans in quest_ans_set:
+            p.drawString(x, y, str('Q.%s  ' % n) + str(each_quest_ans[0]))
+            n += 1
+            y -= 20
+            p.drawString(x, y, 'Ans: ' + str(each_quest_ans[1]))
+            y -= 30
+        p.showPage()
+        p.save()
+        file_data.seek(0)
+        return Response(
+            file_data.read(),
+            mimetype="application/pdf",
+            headers={"Content-disposition": "attachment; filename=Question Report.pdf"})
+
     else:
         flash('Please log-in with Administrator account to view the control panel')
         return redirect(url_for('index'))
+
+
+@app.route('/control-center/dashboard')
+@login_required
+def view_dashboard():
+    if current_user.is_admin:
+        engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
+        cur = engine.connect()
+        user_marks_details = cur.execute("select username, marks, percentage from user_marks_report, users where id=uid")
+        count_users_query = cur.execute("select count(id) from users")
+        for each_user in count_users_query:
+            count_users = each_user[0]
+        passing_users_query = cur.execute("select count(uid) from user_marks_report where percentage > 60.00")
+        for each_passing_user in passing_users_query:
+            passing_users = each_passing_user[0]
+        failing_users_query = cur.execute("select count(uid) from user_marks_report where percentage < 60.00")
+        for each_failing_user in failing_users_query:
+            failing_users = each_failing_user[0]
+        return render_template('dashboard.html', **locals())
+    else:
+        flash("You need to log-in with Administrator to view dashboard")
 
 
 @app.route('/manage_questions')
@@ -342,10 +433,11 @@ def manage_questions():
 
     return render_template('add_questions.html', form=form)
 
+
 @app.route('/edited_question', methods=['GET', 'POST'])
 @app.route('/edit_question/<int:ques_id>', methods=['GET', 'POST'])
 def edit_question(ques_id=False):
-    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+    engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
 
     # print engine
     cnx = engine.connect()
