@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Export Data</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap-theme.min.css">
+
+    <script src="/static/js/jquery-3.3.1.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="/static/bootstrap-3.3.7/dist/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <form action="/control-center/export-data" id="exporting_data" method="post">
+        <div class="row">
+        <select class="form-control" name="selected_report_type" id="selection_report" style="width:200px">
+            <option>XLS</option>
+            <option>DOC</option>
+            <option>PDF</option>
+        </select>
+        <br/>
+        <button class="btn btn-primary" type="submit" form="exporting_data">Download Report</button>
+    </div>
+    </form>
+</div>
+</body>
+</html>

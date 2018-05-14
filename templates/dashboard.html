@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap-theme.min.css">
+
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <!-- Bootcards CSS for desktop: -->
+    <link rel="stylesheet" href="/static/css/bootcards-desktop.min.css">
+    <style>
+        body{
+            padding-top: 10px;
+        }
+        .fa-3x{
+            font-size: 5em !important
+        }
+        a.canvasjs-chart-credit{
+            display: none
+        }
+    </style>
+</head>
+<body>
+<div class="panel panel-default bootcards-summary">
+  <div class="panel-heading">
+    <h3 class="panel-title">Statistics</h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-xs-6 col-sm-6">
+        <a class="bootcards-summary-item" href="{{url_for('view_all_users')}}" style="height:200px; padding-top:50px;">
+          <i class="fa fa-3x fa-users"></i>
+          <h4>Users<span class="label label-info">{{ count_users }}</span></h4>
+        </a>
+      </div>
+      <div class="col-xs-6 col-sm-6">
+        <a class="bootcards-summary-item" href="#" style="height:200px;">
+          <div id="user_passing_chart" style="width: 100%;left: 30px;height:160px;"></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<br/><br/>
+<table class="table table-striped table-bordered dt-responsive nowrap" style="width:100%" id="user_mks_data">
+    <thead>
+        <th class="text-center">User</th>
+        <th class="text-center">Marks</th>
+        <th class="text-center">Percentage(%)</th>
+    </thead>
+    <tbody>
+    {% for detail in user_marks_details %}
+    <tr>
+        <td><div class="text-center" style="padding-top:15px;">{{detail.username}}</div></td>
+        <td><div class="text-center" style="padding-top:15px;">{{detail.marks}}</div></td>
+        <td><div class="chart" data-percent="{{detail.percentage}}" style="font-size: 10px;width:200px; margin:0 auto;"><span>{{detail.percentage}}</span>%</div></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+<!-- Bootcards JS -->
+<script src="/static/js/bootcards.min.js"></script>
+
+<script type="text/javascript">
+    $('.chart').easyPieChart({
+       // The color of the circular bar. You can pass either a css valid color string like rgb, rgba hex or string colors. But you can also pass a function that accepts the current percentage as a value to return a dynamically generated color.
+        barColor: '#36a9e1',
+        // The color of the track for the bar, false to disable rendering.
+        trackColor: '#f2f2f2',
+        // The color of the scale lines, false to disable rendering.
+        scaleColor: '#dfe0e0',
+        // Defines how the ending of the bar line looks like. Possible values are: butt, round and square.
+        lineCap: 'round',
+        // Width of the bar line in px.
+        lineWidth: 5,
+        // Size of the pie chart in px. It will always be a square.
+        size: 55,
+        // Time in milliseconds for a eased animation of the bar growing, or false to deactivate.
+        animate: 1000,
+        // Callback function that is called at the start of any animation (only if animate is not false).
+        onStart: $.noop,
+        // Callback function that is called at the end of any animation (only if animate is not false).
+        onStop: $.noop
+    });
+
+    //DataTable for displaying user report
+    $('#user_mks_data').DataTable();
+
+
+    //User Passing ratio
+    CanvasJS.addColorSet("customcolorSet", ["#33BBFF","#FF3F3F"]);
+    var chart = new CanvasJS.Chart("user_passing_chart", {
+	animationEnabled: true,
+	colorSet: "customcolorSet",
+	backgroundColor : "transparent",
+	title:{
+		text: "Passing Ratio",
+		verticalAlign: "bottom",
+		fontWeight: "normal",
+		fontStyle: "normal",
+		fontSize: 18,
+		fontColor: "#337ab7",
+		fontFamily: "arial",
+	},
+	data: [{
+		type: "doughnut",
+		startAngle: 60,
+		//innerRadius: 60,
+		indexLabelFontSize: 18,
+		indexLabel: "{label} - #percent%",
+		toolTipContent: "<b>{label}:</b> {y} (#percent%)",
+		dataPoints: [
+			{ y: {{ passing_users}}, label: "Pass" },
+			{ y: {{ failing_users }}, label: "Fail" },
+		]
+	}]
+});
+chart.render();
+</script>
+</body>
+</html>

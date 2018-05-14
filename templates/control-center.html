@@ -5,52 +5,61 @@
     <!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-    <!--Styling for background color of page-->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/jquery.easy-pie-chart.css"/>
+    <link rel="stylesheet" href="/static/css/dataTables.bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/responsive.bootstrap.min.css"/>
+    <!--Styling for navbar of page-->
     <style>
-    body{
-        background-color: lightgreen;
+        .admin-menu a{
+        color: white;
+        }
+        .admin-menu a:hover {
+           color: blue;
     }
     </style>
 </head>
 <body>
-<div class="text-center">
-    <h1>Control Center</h1>
-</div>
-<br/>
-<br/>
-<div class="container">
+<div class="container" style="padding-top:10px;">
     <div class="row">
-        <div class="col-xs-12">
-            <div class="text-center" style="font-weight:bold; font-size: large;">Hello {{ current_user.username }}:</div>
-            <br/>
-            <div class="text-center" style="font-weight:bold; font-size: large;">Where would you like to go ?</div>
-            <br/><br/>
-            <table>
-                <tr>
-                    <td style="padding:0 140px 0 40px;">
-                        <a href="/all_users" class="btn btn-primary">View Users</a>
-                    </td>
-                    <td style="padding:0 140px 0 40px;">
-                        <a href="/manage_questions" class="btn btn-primary">Manage Questions</a>
-                    </td>
-                    <td style="padding:0 140px 0 40px;">
-                        <a href="/all_question" class="btn btn-primary">All Questions</a>
-                    </td>
-                    <td>
-                        <a href="/control-center/export-data" class="btn btn-primary" target="_self">Download Excel Report</a>
-                    </td>
-                </tr>
-            </table>
+        <div class="col-md-3">
+            <ul class="nav nav-pills nav-stacked admin-menu" style="width:220px;height:100%; background-color:#383e4b;position:fixed;z-index: 1;top: 0;left: 0;padding-top: 20px;">
+                <li><a href="{{url_for('view_dashboard')}}" id="dashboard"><span class="glyphicon glyphicon-dashboard"></span>&nbsp;&nbsp;Dashboard</a></li>
+                <li><a href="{{url_for('view_all_users')}}" id="view-users"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;View Users</a></li>
+                <li><a href="{{url_for('manage_questions')}}" id="manage-questions"><span class="glyphicon glyphicon-question-sign"></span>&nbsp;&nbsp;Create Questions</a></li>
+                <li><a href="{{url_for('view_all_question')}}" id="all-questions"><span class="glyphicon glyphicon-th-list"></span>&nbsp;&nbsp;All Questions</a></li>
+                <li><a href="{{url_for('start_test')}}" id="view-exam"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;&nbsp;View Exam Portal</a></li>
+                <li><a href="{{url_for('export')}}" id="view-report"><span class="glyphicon glyphicon-export"></span>&nbsp;&nbsp;Export Data</a></li>
+                <li><a href="{{url_for('log_out')}}" id="logout-nav"><span class="glyphicon glyphicon-log-out"></span>&nbsp;&nbsp;Logout</a></li>
+            </ul>
         </div>
+        <div class="col-md-9 admin-content" id="data"></div>
     </div>
 </div>
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="/static/bootstrap-3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/static/js/jquery.easy-pie-chart.min.js"></script>
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script src="/static/js/dataTables.bootstrap.min.js"></script>
+<script src="/static/js/dataTables.responsive.min.js"></script>
+<script src="/static/js/responsive.bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/js/canvasjs.min.js"></script>
+<script>
+   $(document).ready(function(){
+    $("#dashboard").click()
+   });
+
+   $('.admin-menu li > a').on('click', function(e){
+    var $this = $(this);
+    if ($this.attr('id') !== 'logout-nav'){
+        $("#data").load($this.attr('href'));
+        return false;
+        }
+});
+</script>
 </body>
 </html>
