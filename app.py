@@ -15,7 +15,7 @@ import operator
 import xlsxwriter
 
 from cStringIO import StringIO
-from docx import Document
+# from docx import Document
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from sqlalchemy import create_engine
@@ -23,7 +23,7 @@ from sqlalchemy import create_engine
 app = Flask(__name__, template_folder='../testonline/templates')
 
 app.config["SECRET_KEY"] = "Thisisascretkey"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
@@ -48,6 +48,13 @@ class User(UserMixin, db.Model):
         self.email = email
         self.is_admin = is_admin
 
+class Exams(db.Model):
+    # __tablename__ = 'questions'
+    # __searchable__=['title','content']
+
+    id = db.Column('id', db.Integer, db.Sequence('exam_id_seq', start=1), primary_key=True)
+    exam = db.Column(db.Text())
+    
 
 class Questions(db.Model):
     # __tablename__ = 'questions'
@@ -332,7 +339,7 @@ def export():
 @app.route('/control-center/export-data', methods=['GET', 'POST'])
 @login_required
 def export_data():
-    engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
+    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
     cur = engine.connect()
     all_questions = cur.execute("select question from questions")
     all_answers = cur.execute("select choice from questions_choices where is_right = true")
@@ -365,18 +372,18 @@ def export_data():
             mimetype="application/excel",
             headers={"Content-disposition": "attachment; filename=Question Report.xls"})
 
-    elif current_user.is_admin and request.form['selected_report_type'] == 'DOC':
-        file_data = StringIO()
-        document = Document()
-        document.add_heading('Question Set', level=1)
-        document.add_paragraph([str(ques_ans[0]) + '\n' + 'Ans: ' + str(ques_ans[1]) +
-                                '\n' for ques_ans in quest_ans_set])
-        document.save(file_data)
-        file_data.seek(0)
-        return Response(
-            file_data.read(),
-            mimetype="application/doc",
-            headers={"Content-disposition": "attachment; filename=Question Report.doc"})
+    # elif current_user.is_admin and request.form['selected_report_type'] == 'DOC':
+    #     file_data = StringIO()
+    #     document = Document()
+    #     document.add_heading('Question Set', level=1)
+    #     document.add_paragraph([str(ques_ans[0]) + '\n' + 'Ans: ' + str(ques_ans[1]) +
+    #                             '\n' for ques_ans in quest_ans_set])
+    #     document.save(file_data)
+    #     file_data.seek(0)
+    #     return Response(
+    #         file_data.read(),
+    #         mimetype="application/doc",
+    #         headers={"Content-disposition": "attachment; filename=Question Report.doc"})
 
     elif current_user.is_admin and request.form['selected_report_type'] == 'PDF':
         file_data = StringIO()
@@ -409,7 +416,7 @@ def export_data():
 @login_required
 def view_dashboard():
     if current_user.is_admin:
-        engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
+        engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
         cur = engine.connect()
         user_marks_details = cur.execute("select username, marks, percentage from user_marks_report, users where id=uid")
         count_users_query = cur.execute("select count(id) from users")
@@ -437,7 +444,7 @@ def manage_questions():
 @app.route('/edited_question', methods=['GET', 'POST'])
 @app.route('/edit_question/<int:ques_id>', methods=['GET', 'POST'])
 def edit_question(ques_id=False):
-    engine = create_engine('postgresql+psycopg2://bista:solutions@localhost/testonline')
+    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
 
     # print engine
     cnx = engine.connect()
