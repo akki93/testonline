@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>All Exams</title>
+    <!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="/static/bootstrap-3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/jquery.easy-pie-chart.css"/>
+    <link rel="stylesheet" href="/static/css/dataTables.bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/responsive.bootstrap.min.css"/>
+    <!--Styling for navbar of page-->
+    <style>
+        .admin-menu a{
+        color: white;
+        }
+        .admin-menu a:hover {
+           color: blue;
+    }
+    </style>
+</head>
+<body>
+<div class="container" style="padding-top:10px;">
+    <div class="row">
+        <div class="col-md-6">
+            <div>
+                <a class="btn btn-primary" style="text-decoration:none; float:right;">Back</a>
+            </div>
+            <h4>
+                <a href="#" class="glyphicon glyphicon-plus-sign" id="add_exam_btn" style="text-decoration:none;"> Exam</a>
+            </h4>
+            <div class="form-group">
+                <form id="form_exam_add" action="/control-center/exam_created" method="post">
+                    <label>Add Subject Here: </label>
+                    <br/>
+                    <input type="text" id="exam_name" value="" name="exam_name" class="form-control">
+                    <br>
+                    <button type="submit" class="btn btn-primary" target="_self" style="margin-bottom:10px;">Save</button>
+                </form>
+            </div>
+            <div>
+                <table class="table table-striped table-bordered dt-responsive nowrap" style="width:100%" id="exams">
+                    <thead>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Exam</th>
+                    </thead>
+                    <tbody>
+                    {% for each_sub in sub_names %}
+                        <tr>
+                            <td><div class="text-center" style="padding-top:15px;">{{each_sub.id}}</div></td>
+                            <td><div class="text-center" style="padding-top:15px;">{{each_sub.exam}}</div></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="/static/bootstrap-3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script src="/static/js/dataTables.bootstrap.min.js"></script>
+<script src="/static/js/dataTables.responsive.min.js"></script>
+<script src="/static/js/responsive.bootstrap.min.js"></script>
+<script>
+     //DataTable for displaying user report
+    $('#exams').DataTable();
+
+    $(function(){
+    $("#form_exam_add").hide();
+    $("#add_exam_btn").on("click", function(){
+        $("#form_exam_add").toggle();
+    });
+});
+</script>
+<!--<script>-->
+<!--$(document).ready(function(){-->
+<!--$("#dashboard").click()-->
+<!--});-->
+
+<!--$('.admin-menu li > a').on('click', function(e){-->
+<!--var $this = $(this);-->
+<!--if ($this.attr('id') !== 'logout-nav'){-->
+<!--$("#data").load($this.attr('href'));-->
+<!--return false;-->
+<!--}-->
+<!--});-->
+<!--</script>-->
+</body>
+</html>
