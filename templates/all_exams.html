@@ -25,12 +25,16 @@
 <div class="container" style="padding-top:15px;">
     <div class="row">
         <div class="col-md-6">
-            <div class="alert alert-success" id="sucess_message">
+            <div class="alert alert-success" id="sucess_message" style="display: none;">
               <strong>Success!</strong> Indicates a successful or positive action.
             </div>            
-            <div>
+            <!-- <div>
                 <a href="/control-center" id="form_exam_back" class="btn btn-primary" style="text-decoration:none; float:right;">Back</a>
+            </div> -->
+            <div>
+               <button type="button" onclick="reloadPage();" class="btn btn-primary btn-sm" style="text-decoration:none; float:right;">Refresh</button>
             </div>
+
             <h4>
                 <a href="#" class="glyphicon glyphicon-plus-sign" id="add_exam_btn" style="text-decoration:none;"> Exam</a>
             </h4>
@@ -73,16 +77,21 @@
 <script src="/static/js/responsive.bootstrap.min.js"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/form.js') }}" ></script>
 <script>
+    function reloadPage(){
+        location.reload(true);
+    }
      //DataTable for displaying user report
-    $('#exams').DataTable();
+    $('#exams').DataTable({
+        "order": [[ 0, "desc" ]]
+    });
 
     $(function(){
     $("#form_exam_add").hide();
-    $("#form_exam_back").hide();
-    $('#sucess_message').hide();
+    // $("#form_exam_back").hide();
+    // $('#sucess_message').hide();
     $("#add_exam_btn").on("click", function(){
         $("#form_exam_add").toggle();
-        $("#form_exam_back").toggle();
+        // $("#form_exam_back").toggle();
 
     });
 });

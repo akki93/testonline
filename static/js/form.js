@@ -1,5 +1,6 @@
 $(document).ready(function(){
 
+	
 
     $("form").on('submit' , function(event){
         // alert("form has been submit");
