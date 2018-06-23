@@ -22,17 +22,21 @@
     </style>
 </head>
 <body>
-<div class="container" style="padding-top:10px;">
+<div class="container" style="padding-top:15px;">
     <div class="row">
         <div class="col-md-6">
+            <div class="alert alert-success" id="sucess_message">
+              <strong>Success!</strong> Indicates a successful or positive action.
+            </div>            
             <div>
-                <a class="btn btn-primary" style="text-decoration:none; float:right;">Back</a>
+                <a href="/control-center" id="form_exam_back" class="btn btn-primary" style="text-decoration:none; float:right;">Back</a>
             </div>
             <h4>
                 <a href="#" class="glyphicon glyphicon-plus-sign" id="add_exam_btn" style="text-decoration:none;"> Exam</a>
             </h4>
+            <br>
             <div class="form-group">
-                <form id="form_exam_add" action="/control-center/exam_created" method="post">
+                <form id="form_exam_add">
                     <label>Add Subject Here: </label>
                     <br/>
                     <input type="text" id="exam_name" value="" name="exam_name" class="form-control">
@@ -67,14 +71,19 @@
 <script src="/static/js/dataTables.bootstrap.min.js"></script>
 <script src="/static/js/dataTables.responsive.min.js"></script>
 <script src="/static/js/responsive.bootstrap.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/form.js') }}" ></script>
 <script>
      //DataTable for displaying user report
     $('#exams').DataTable();
 
     $(function(){
     $("#form_exam_add").hide();
+    $("#form_exam_back").hide();
+    $('#sucess_message').hide();
     $("#add_exam_btn").on("click", function(){
         $("#form_exam_add").toggle();
+        $("#form_exam_back").toggle();
+
     });
 });
 </script>
