@@ -19,17 +19,22 @@ from cStringIO import StringIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from sqlalchemy import create_engine
+from flask_migrate import Migrate
 
 app = Flask(__name__, template_folder='../testonline/templates')
 
 app.config["SECRET_KEY"] = "Thisisascretkey"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'open_login'
+
+
+connection_string = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
 
 
 class User(UserMixin, db.Model):
@@ -54,6 +59,9 @@ class Exams(db.Model):
 
     id = db.Column('id', db.Integer, db.Sequence('exam_id_seq', start=1), primary_key=True)
     exam = db.Column(db.Text())
+
+    def __repr__(self):
+        return '{}'.format(self.exam)
     
 
 class Questions(db.Model):
@@ -66,6 +74,7 @@ class Questions(db.Model):
     created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     questions_choices = db.relationship('QuestionsChoices', backref='main_question', cascade="all,delete", lazy=True)
     right_choice = db.Column(db.String)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'), nullable=False)
 
 
 class QuestionsChoices(db.Model):
@@ -258,8 +267,14 @@ def start_test():
 
 @app.route('/add_question', methods=['GET', 'POST'])
 def add_question():
+    print "REq args ----------->", request.args.get('exam_id')
     form = AddQuestionForm()
+    choices = [(int(each.id), each.exam) for each in Exams.query.all()]
+    form.exam_id.choices = [(0, "-- Select Subject --")]
+    form.exam_id.choices += choices
+
     print "form.validate_on_submit()", request.method, form.validate(), form.validate_on_submit()
+    print "Request method ----------->", request.form
     if request.method == 'POST':
         if form.validate() == False:
             flash("All fields are required")
@@ -267,9 +282,9 @@ def add_question():
         else:
             ques = Questions.query.filter_by(question=request.form['name']).first()
             if not ques:
-                print "request.form['right_choice']>>>>>>>", request.form['right_choice']
+                print "request.form['right_choice']>>>>>>>", request.form['right_choice'], request.form['exam_id']
                 question = Questions(question=request.form['name'], is_active=request.form['is_active'],
-                                     right_choice=request.form['right_choice'])
+                                     right_choice=request.form['right_choice'], exam_id=request.form['exam_id'])
                 db.session.add(question)
                 db.session.commit()
                 option1 = False
@@ -339,7 +354,7 @@ def export():
 @app.route('/control-center/export-data', methods=['GET', 'POST'])
 @login_required
 def export_data():
-    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+    engine = create_engine(connection_string)
     cur = engine.connect()
     all_questions = cur.execute("select question from questions")
     all_answers = cur.execute("select choice from questions_choices where is_right = true")
@@ -412,11 +427,27 @@ def export_data():
         return redirect(url_for('index'))
 
 
+@app.route('/control-center/exam_created', methods=['GET', 'POST'])
+@login_required
+def exam_create():
+    if request.method == 'POST':
+        subject_name_data = Exams(exam=request.form['exam_name'])
+        db.session.add(subject_name_data)
+        db.session.commit()
+        return redirect(url_for('all_exam'))
+
+
+@app.route('/control-center/all_exam')
+@login_required
+def all_exam():
+    return render_template('all_exams.html', sub_names=Exams.query.all())
+
+
 @app.route('/control-center/dashboard')
 @login_required
 def view_dashboard():
     if current_user.is_admin:
-        engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+        engine = create_engine(connection_string)
         cur = engine.connect()
         user_marks_details = cur.execute("select username, marks, percentage from user_marks_report, users where id=uid")
         count_users_query = cur.execute("select count(id) from users")
@@ -437,14 +468,16 @@ def view_dashboard():
 @login_required
 def manage_questions():
     form = AddQuestionForm()
-
+    choices = [(int(each.id), each.exam) for each in Exams.query.all()]
+    form.exam_id.choices = [(0, "-- Select Subject --")]
+    form.exam_id.choices += choices
     return render_template('add_questions.html', form=form)
 
 
 @app.route('/edited_question', methods=['GET', 'POST'])
 @app.route('/edit_question/<int:ques_id>', methods=['GET', 'POST'])
 def edit_question(ques_id=False):
-    engine = create_engine('postgresql+psycopg2://arpit:honey@localhost/testonline')
+    engine = create_engine(connection_string)
 
     # print engine
     cnx = engine.connect()
