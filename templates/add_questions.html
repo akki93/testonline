@@ -17,7 +17,7 @@
 </head>
 <body >
 
-<div class="container">
+<div >
   <br/>
     <div class="text-left">
     <h1>Test Online</h1>
@@ -113,7 +113,7 @@
         <div class="form-group">
            {{ form.right_choice.label(class="control-label col-sm-2") }}
            <div class="col-sm-10">
-           {{form.right_choice}}
+           {{form.right_choice(class='form-control')}}
           </div>
         </div>
         <br/>
@@ -126,7 +126,7 @@
          
          <br/>
          <div class="form-group">
-         {{form.save_data(class="btn-success")}}
+         {{form.save_data(class="btn btn-primary btn-success")}}
          </div>
          
        

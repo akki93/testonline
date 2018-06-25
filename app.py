@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect, url_for, session, Response
+from flask import Flask, render_template, request, flash, redirect, url_for, session, Response, jsonify
 from forms import LoginForm, RegisterForm, PasswordResetForm, AddQuestionForm, QuizForm
 from flask_sqlalchemy import SQLAlchemy
 import datetime
@@ -23,9 +23,12 @@ from flask_migrate import Migrate
 
 app = Flask(__name__, template_folder='../testonline/templates')
 
+connection_string = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
+
 app.config["SECRET_KEY"] = "Thisisascretkey"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
+app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -34,7 +37,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'open_login'
 
 
-connection_string = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
+# connection_string = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
 
 
 class User(UserMixin, db.Model):
@@ -46,6 +49,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(80), unique=True)
     created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     is_admin = db.Column(db.Boolean, unique=False, default=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'))
 
     def __init__(self, username, password, email, is_admin):
         self.username = username
@@ -102,7 +106,7 @@ class UserQuestionAnswer(db.Model):
 class UserMarksReport(db.Model):
     __tablename__ = 'user_marks_report'
     exam_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    uid = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, primary_key=True)
+    uid = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),nullable=False, primary_key=True)
     marks = db.Column(db.Integer)
     percentage = db.Column(db.Float)
 
@@ -428,13 +432,16 @@ def export_data():
 
 
 @app.route('/control-center/exam_created', methods=['GET', 'POST'])
+# @app.route('/control-center/<exam_name>', methods=['POST'])
 @login_required
-def exam_create():
+def exam_create(exam_name= ''):
+    print("calling controller=====", request)
     if request.method == 'POST':
         subject_name_data = Exams(exam=request.form['exam_name'])
         db.session.add(subject_name_data)
         db.session.commit()
-        return redirect(url_for('all_exam'))
+        return jsonify({'sucess_submit':str(subject_name_data )+ '!  is Added sucessfully.'})
+    return jsonify({'error':'There is some thing error'})
 
 
 @app.route('/control-center/all_exam')
@@ -562,6 +569,20 @@ def delete_question(ques_id=False):
         db.session.commit()
         flash(message + " " + "Deleted Sucessfully.")
         return redirect(url_for('view_all_question'))
+    return "Delete User"
+
+@app.route('/delete_user/<int:user_id>', methods=['GET', 'POST'])
+def delete_user(user_id = False):
+    search_result = User.query.filter_by(id=int(user_id)).first()
+    if search_result:
+        message = ""
+        message += str(search_result.username)
+        # db.session.delete(user_ans) if user_ans else True
+        # db.session.delete(choices)  if choices  else True
+        db.session.delete(search_result)
+        db.session.commit()
+        flash(message + " " + "Deleted Sucessfully.")
+        return redirect(url_for('view_all_users'))
     return "Delete User"
 
 
