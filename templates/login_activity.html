@@ -65,7 +65,7 @@ span.psw {
     }
 }
 
-.lbl-username, .lbl-password, .lbl_remember, a.create_link, a.forgot_link{
+.lbl-username, .lbl-password, .lbl_remember, .lbl-subject-id, a.create_link, a.forgot_link{
     color: #fff;
 }
 
@@ -107,6 +107,9 @@ span.psw {
       </div>
         <fieldset>
              {{ form.hidden_tag() }}
+            {{ form.subject_id.label(class='lbl-subject-id') }}
+            {{ form.subject_id(class='form-control')}}
+            <br><br>
              {{ form.username.label(class='lbl-username') }}
              {{ form.username(class='form-control') }}
             <br/>

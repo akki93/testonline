@@ -13,7 +13,7 @@ $(document).ready(function(){
         })
         .done(function(data){
         	if (data.error){
-        		$('#sucess_message').show();
+        		$('#sucess_message').text(data.error).show();
 
         	}
         	else if (data.sucess_submit){
