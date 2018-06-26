@@ -23,7 +23,7 @@ from flask_migrate import Migrate
 
 app = Flask(__name__, template_folder='../testonline/templates')
 
-connection_string = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
+connection_string = 'postgresql+psycopg2://bista:solutions@localhost/testonline'
 
 app.config["SECRET_KEY"] = "Thisisascretkey"
 app.config['SQLALCHEMY_DATABASE_URI'] = connection_string
@@ -39,6 +39,10 @@ login_manager.login_view = 'open_login'
 
 # connection_string = 'postgresql+psycopg2://arpit:honey@localhost/testonline'
 
+user_subj = db.Table('user_subj',
+                     db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+                     db.Column('subj_id', db.Integer, db.ForeignKey('exams.id'))
+                )
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -50,6 +54,8 @@ class User(UserMixin, db.Model):
     created_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     is_admin = db.Column(db.Boolean, unique=False, default=False)
     exam_id = db.Column(db.Integer, db.ForeignKey('exams.id', ondelete='CASCADE'))
+    # subject_choices = db.relationship('Exams', backref='main_subject', cascade="all,delete", lazy=True)
+    subject_choices = db.relationship('Exams', secondary='user_subj', backref=db.backref('user_assoc_sub', lazy='dynamic'))
 
     def __init__(self, username, password, email, is_admin):
         self.username = username
@@ -119,9 +125,16 @@ def load_user(user_id):
 @app.route("/sign_in", methods=["GET", "POST"])
 def open_login():
     form = LoginForm()
+    choices = [(int(each.id), each.exam) for each in Exams.query.all()]
+    form.subject_id.choices = [(0, "-- Select Subject --")]
+    form.subject_id.choices += choices
     if form.validate_on_submit():
         # return '<h1>'+form.username.data +' ' +form.password.data+ '</h1>'
         user = User.query.filter_by(username=form.username.data).first()
+        user_sel_sub = Exams.query.filter_by(id=int(request.form['subject_id'])).first()
+        if user_sel_sub:
+            user_sel_sub.user_assoc_sub.append(user)
+            db.session.commit()
         try:
             if user.is_admin:
                 if check_password_hash(user.password, form.password.data):
@@ -132,7 +145,7 @@ def open_login():
             elif user:
                 if check_password_hash(user.password, form.password.data):
                     login_user(user, remember=form.remember.data)
-                    return redirect(url_for('index'))
+                    return redirect(url_for('index', selected_subject=user_sel_sub))
                 else:
                     flash("Password does not match.Forgot password ?")
             else:
@@ -197,6 +210,7 @@ def forgot_password():
 
 @app.route('/')
 def index():
+    print("request args==========", request.args)
     return render_template('index.html')
 
 
@@ -251,7 +265,7 @@ def submit_test():
 
 @app.route('/start_test', methods=['GET', 'POST'])
 @login_required
-def start_test():
+def start_test(exams=False):
     form = QuizForm()
     print "request=====", request, request.form
     if not current_user.is_admin:
@@ -437,11 +451,12 @@ def export_data():
 def exam_create(exam_name= ''):
     print("calling controller=====", request)
     if request.method == 'POST':
-        subject_name_data = Exams(exam=request.form['exam_name'])
-        db.session.add(subject_name_data)
-        db.session.commit()
-        return jsonify({'sucess_submit':str(subject_name_data )+ '!  is Added sucessfully.'})
-    return jsonify({'error':'There is some thing error'})
+        if request.form['exam_name']:
+            subject_name_data = Exams(exam=request.form['exam_name'])
+            db.session.add(subject_name_data)
+            db.session.commit()
+            return jsonify({'sucess_submit':str(subject_name_data )+ '!  is Added sucessfully.'})
+    return jsonify({'error':'There is some error. Please fill in the subject'})
 
 
 @app.route('/control-center/all_exam')
