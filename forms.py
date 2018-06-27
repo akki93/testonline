@@ -10,7 +10,7 @@ class LoginForm(FlaskForm):
     username = StringField("UserName",validators=[InputRequired("Please enter user name."), Length(min=4, max=15)])
     password = PasswordField("Password",validators=[InputRequired("Please enter password."),Length(min=4, max=20)])
     remember = BooleanField("Remember me")
-    subject_id = SelectField('Select Subject', choices=[], coerce=int)
+    subject_id = SelectField('Select Subject',validators=[InputRequired("Please select subject.") ],choices=[], coerce=int)
 
 class RegisterForm(FlaskForm):
 

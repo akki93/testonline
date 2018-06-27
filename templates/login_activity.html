@@ -71,6 +71,10 @@ span.psw {
 
 </style>
 {% endblock %}
+<!-- <script type="text/javascript">
+
+    $(.make_subject_required).setattr('required',True)
+</script> -->
 </head>
 
 <body>
@@ -95,6 +99,9 @@ span.psw {
             {% endfor %}
         {% endif %}
     {% endwith %}
+     {% for message in form.subject_id.errors %}
+    <div>Select Subject :{{ message }}</div>
+    {% endfor %}
      {% for message in form.username.errors %}
     <div>UserName :{{ message }}</div>
     {% endfor %}
@@ -108,7 +115,7 @@ span.psw {
         <fieldset>
              {{ form.hidden_tag() }}
             {{ form.subject_id.label(class='lbl-subject-id') }}
-            {{ form.subject_id(class='form-control')}}
+            {{ form.subject_id(class='form-control', required='1')}}
             <br><br>
              {{ form.username.label(class='lbl-username') }}
              {{ form.username(class='form-control') }}
