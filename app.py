@@ -131,7 +131,7 @@ def open_login():
     if form.validate_on_submit():
         # return '<h1>'+form.username.data +' ' +form.password.data+ '</h1>'
         user = User.query.filter_by(username=form.username.data).first()
-        user_sel_sub = Exams.query.filter_by(id=int(request.form['subject_id'])).first()
+        user_sel_sub = Exams.query.filter_by(id=int(request.form['subject_id'])).first() if request.form['subject_id'] else False
         if user_sel_sub:
             user_sel_sub.user_assoc_sub.append(user)
             db.session.commit()
@@ -145,7 +145,10 @@ def open_login():
             elif user:
                 if check_password_hash(user.password, form.password.data):
                     login_user(user, remember=form.remember.data)
-                    return redirect(url_for('index', selected_subject=user_sel_sub))
+                    if user_sel_sub:
+                        return redirect(url_for('index', selected_subject=user_sel_sub.id))
+                    else:
+                        return redirect(url_for('index'))
                 else:
                     flash("Password does not match.Forgot password ?")
             else:
@@ -211,7 +214,7 @@ def forgot_password():
 @app.route('/')
 def index():
     print("request args==========", request.args)
-    return render_template('index.html')
+    return render_template('index.html', exams=request.args.get('selected_subject'))
 
 
 @app.route('/submit_test', methods=['GET', 'POST'])
@@ -263,11 +266,12 @@ def submit_test():
     return render_template('thanks.html', name=current_user, **locals())
 
 
+@app.route('/start_test/<int:exams>', methods=['GET', 'POST'])
 @app.route('/start_test', methods=['GET', 'POST'])
 @login_required
-def start_test(exams=False):
+def start_test(exams=0):
     form = QuizForm()
-    print "request=====", request, request.form
+    print "request===== examps=========", request, request.form, exams
     if not current_user.is_admin:
         already_submit = UserQuestionAnswer.query.filter_by(user_id=int(current_user.id)).first()
         print ("already_submit", already_submit)
@@ -279,8 +283,14 @@ def start_test(exams=False):
     #     form.answers.choices = [(probot.id, probot.choice) for probot in each.questions_choices]
     #     return render_template('quiz.html', form=form,questions = Questions.query.all())
     # print "form>>>>>>>>>>data",form
-
-    return render_template('quiz.html', form=form, questions=Questions.query.all(), name=current_user.username)
+    questions = Questions()
+    print("exams===========",exams,type(exams))
+    if current_user.is_admin:
+        questions = Questions.query.all()
+    else:
+        questions = Questions.query.filter_by(exam_id=exams).all()
+    print("questions===========",questions)
+    return render_template('quiz.html', form=form, questions= questions, name=current_user.username)
 
 
 @app.route('/add_question', methods=['GET', 'POST'])

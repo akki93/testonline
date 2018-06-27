@@ -43,8 +43,12 @@
   </div>
   <div class="row">
   	 <div class="col-sm-6 col-md-offset-2" align="center">
-  	 	<a href="/start_test" class="btn btn-primary">Start Test</a>
-
+     {% if exams %}
+  	 	<a href="{{ url_for('start_test',exams=exams)}}" class="btn btn-primary">Start Test</a>
+     {% endif %}
+     {% if not exams %}
+      <a href="/start_test" class="btn btn-primary">Start Test</a>
+     {% endif %}
   	 </div>
   </div>
 </div>
